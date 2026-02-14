@@ -19,7 +19,12 @@ function getSelector(): string {
     hostname.includes("grok.x.ai") ||
     hostname.includes("grok.com")
   ) {
-    return '[data-testid="messageEntry"], [data-testid="tweetText"]'
+    // For x.com, keep the old selectors (tweets)
+    if (hostname.includes("x.com")) {
+      return '[data-testid="tweetText"]'
+    }
+    // For Grok, use the message-bubble class
+    return '.message-bubble'
   }
   return ""
 }
