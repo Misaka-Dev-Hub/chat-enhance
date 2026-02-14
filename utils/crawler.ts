@@ -19,7 +19,12 @@ function getSelector(): string {
     hostname.includes("grok.x.ai") ||
     hostname.includes("grok.com")
   ) {
-    return '[data-testid="messageEntry"], [data-testid="tweetText"]'
+    // Grok uses `message-bubble` class.
+    // User messages typically have `rounded-br-lg` (rounded bottom-right).
+    // We'll target `.message-bubble.rounded-br-lg` or `.message-bubble.bg-surface-l1`.
+    // The user provided snippet has both.
+    // We'll prioritize `rounded-br-lg` as it implies right-alignment (user side).
+    return ".message-bubble.rounded-br-lg"
   }
   return ""
 }
@@ -36,7 +41,6 @@ export function getMessages(): Message[] {
     let text = element.textContent?.trim() || ""
 
     if (hostname.includes("gemini.google.com")) {
-      // Remove "You said " prefix if present
       text = text.replace(/^You said\s*/i, "")
     }
 
