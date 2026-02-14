@@ -14,11 +14,11 @@ function getSelector(): string {
     return '[data-message-author-role="user"]'
   } else if (hostname.includes("gemini.google.com")) {
     return '.query-text, .user-query, [data-test-id="user-query"]'
-  } else if (hostname.includes("x.com") || hostname.includes("grok.x.ai")) {
-    // Grok/X uses data-testid heavily.
-    // Assuming messageEntry for now.
-    // Need to differentiate user vs bot. Often user messages are aligned right or have specific classes.
-    // This is a best-effort guess.
+  } else if (
+    hostname.includes("x.com") ||
+    hostname.includes("grok.x.ai") ||
+    hostname.includes("grok.com")
+  ) {
     return '[data-testid="messageEntry"], [data-testid="tweetText"]'
   }
   return ""
@@ -30,9 +30,16 @@ export function getMessages(): Message[] {
 
   const elements = document.querySelectorAll(selector)
   const messages: Message[] = []
+  const hostname = window.location.hostname
 
   Array.from(elements).forEach((element, index) => {
-    const text = element.textContent?.trim() || ""
+    let text = element.textContent?.trim() || ""
+
+    if (hostname.includes("gemini.google.com")) {
+      // Remove "You said " prefix if present
+      text = text.replace(/^You said\s*/i, "")
+    }
+
     if (text) {
       messages.push({
         id: `msg-${index}`,

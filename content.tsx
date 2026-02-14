@@ -9,7 +9,8 @@ export const config: PlasmoCSConfig = {
     "https://chat.openai.com/*",
     "https://gemini.google.com/*",
     "https://x.com/*",
-    "https://grok.x.ai/*"
+    "https://grok.x.ai/*",
+    "https://grok.com/*"
   ]
 }
 
