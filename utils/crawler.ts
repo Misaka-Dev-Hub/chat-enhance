@@ -5,24 +5,51 @@ export interface Message {
   element: HTMLElement
 }
 
+function getSelector(): string {
+  const hostname = window.location.hostname
+  if (
+    hostname.includes("chatgpt.com") ||
+    hostname.includes("openai.com")
+  ) {
+    return '[data-message-author-role="user"]'
+  } else if (hostname.includes("gemini.google.com")) {
+    return '.query-text, .user-query, [data-test-id="user-query"]'
+  } else if (hostname.includes("x.com") || hostname.includes("grok.x.ai")) {
+    // Grok/X uses data-testid heavily.
+    // Assuming messageEntry for now.
+    // Need to differentiate user vs bot. Often user messages are aligned right or have specific classes.
+    // This is a best-effort guess.
+    return '[data-testid="messageEntry"], [data-testid="tweetText"]'
+  }
+  return ""
+}
+
 export function getMessages(): Message[] {
-  const elements = document.querySelectorAll('[data-message-author-role="user"]')
-  return Array.from(elements).map((element, index) => {
+  const selector = getSelector()
+  if (!selector) return []
+
+  const elements = document.querySelectorAll(selector)
+  const messages: Message[] = []
+
+  Array.from(elements).forEach((element, index) => {
     const text = element.textContent?.trim() || ""
-    return {
-      id: `msg-${index}`,
-      text: text.length > 20 ? text.substring(0, 20) + "..." : text,
-      fullText: text,
-      element: element as HTMLElement
+    if (text) {
+      messages.push({
+        id: `msg-${index}`,
+        text: text.length > 20 ? text.substring(0, 20) + "..." : text,
+        fullText: text,
+        element: element as HTMLElement
+      })
     }
   })
+  return messages
 }
 
 export function subscribeToMessages(callback: (messages: Message[]) => void) {
   let timeout: ReturnType<typeof setTimeout>
 
   const observer = new MutationObserver(() => {
-    clearTimeout(timeout)
+    if (timeout) clearTimeout(timeout)
     timeout = setTimeout(() => {
       const messages = getMessages()
       callback(messages)

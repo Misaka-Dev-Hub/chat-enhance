@@ -4,7 +4,13 @@ import type { PlasmoCSConfig } from "plasmo"
 import Sidebar from "./components/Sidebar"
 
 export const config: PlasmoCSConfig = {
-  matches: ["https://chatgpt.com/*", "https://chat.openai.com/*"]
+  matches: [
+    "https://chatgpt.com/*",
+    "https://chat.openai.com/*",
+    "https://gemini.google.com/*",
+    "https://x.com/*",
+    "https://grok.x.ai/*"
+  ]
 }
 
 export const getStyle = () => {
