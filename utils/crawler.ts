@@ -19,12 +19,9 @@ function getSelector(): string {
     hostname.includes("grok.x.ai") ||
     hostname.includes("grok.com")
   ) {
-    // For x.com, keep the old selectors (tweets)
-    if (hostname.includes("x.com")) {
-      return '[data-testid="tweetText"]'
-    }
-    // For Grok, use the message-bubble class
-    return '.message-bubble'
+    // Grok uses `message-bubble` class.
+    // We'll select ALL bubbles and filter in the loop for user-specific classes like `bg-surface-l1`.
+    return ".message-bubble"
   }
   return ""
 }
@@ -38,14 +35,29 @@ export function getMessages(): Message[] {
   const hostname = window.location.hostname
 
   Array.from(elements).forEach((element, index) => {
+    let isValid = true
     let text = element.textContent?.trim() || ""
 
     if (hostname.includes("gemini.google.com")) {
-      // Remove "You said " prefix if present
       text = text.replace(/^You said\s*/i, "")
+    } else if (
+      hostname.includes("x.com") ||
+      hostname.includes("grok.x.ai") ||
+      hostname.includes("grok.com")
+    ) {
+      // Grok User Message Check:
+      // Must contain `bg-surface-l1` (user bubble background)
+      // Or `rounded-br-lg` (user bubble geometry)
+      const isGrokUserMessage =
+        element.classList.contains("bg-surface-l1") ||
+        element.classList.contains("rounded-br-lg")
+
+      if (!isGrokUserMessage) {
+        isValid = false
+      }
     }
 
-    if (text) {
+    if (isValid && text) {
       messages.push({
         id: `msg-${index}`,
         text: text.length > 20 ? text.substring(0, 20) + "..." : text,
